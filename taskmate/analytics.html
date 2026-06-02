@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据面板 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── 顶部用户信息卡 ── */
+    .an-profile {
+      background: linear-gradient(135deg, var(--primary) 0%, #6B8EFF 100%);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      color: #fff;
+      flex-wrap: wrap;
+    }
+    .an-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .an-profile-info { flex: 1; min-width: 0; }
+    .an-name { font-size: 18px; font-weight: 700; margin-bottom: 3px; }
+    .an-meta { font-size: 13px; opacity: 0.85; margin-bottom: 6px; }
+    .an-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .an-skill-tag {
+      padding: 2px 10px; border-radius: 12px;
+      background: rgba(255,255,255,0.2);
+      font-size: 12px; font-weight: 500;
+    }
+
+    /* ── 时间筛选 ── */
+    .an-filter-bar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .an-filter-label { font-size: 13px; color: var(--gray-500); }
+    .an-period-group { display: flex; background: var(--gray-100); border-radius: 8px; padding: 3px; gap: 2px; }
+    .an-period-btn {
+      padding: 5px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      color: var(--gray-500); border: none; background: transparent; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .an-period-btn.active { background: var(--white); color: var(--primary); box-shadow: var(--shadow-sm); }
+    .an-date-range { display: none; align-items: center; gap: 6px; }
+    .an-date-range.show { display: flex; }
+    .an-date-input {
+      padding: 5px 10px; border: 1px solid var(--gray-300); border-radius: 6px;
+      font-size: 13px; font-family: var(--font); outline: none;
+    }
+    .an-date-input:focus { border-color: var(--primary); }
+
+    /* ── 核心数据卡片 ── */
+    .an-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .an-kpi-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .an-kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .an-kpi-icon { font-size: 22px; margin-bottom: 6px; }
+    .an-kpi-num {
+      font-size: 28px; font-weight: 800; line-height: 1;
+      margin-bottom: 4px; font-variant-numeric: tabular-nums;
+    }
+    .an-kpi-num.blue { color: var(--primary); }
+    .an-kpi-num.green { color: var(--success); }
+    .an-kpi-num.yellow { color: var(--warning); }
+    .an-kpi-num.red { color: var(--danger); }
+    .an-kpi-num.purple { color: #8B5CF6; }
+    .an-kpi-label { font-size: 12px; color: var(--gray-500); }
+
+    /* ── 图表网格 ── */
+    .an-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .an-chart-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-200);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+    }
+    .an-chart-card.full { grid-column: 1 / -1; }
+    .an-chart-title {
+      font-size: 14px; font-weight: 600; color: var(--gray-800);
+      margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
+    }
+    .an-chart-desc { font-size: 12px; color: var(--gray-400); margin-bottom: 16px; }
+    .an-chart-wrap { position: relative; }
+
+    /* ── 任务明细列表 ── */
+    .an-task-list { display: flex; flex-direction: column; gap: 8px; }
+    .an-task-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--gray-100);
+      background: var(--gray-50);
+      transition: background 0.12s;
+    }
+    .an-task-item:hover { background: var(--primary-light); }
+    .an-task-status-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .dot-todo { background: var(--gray-300); }
+    .dot-doing { background: var(--warning); }
+    .dot-done { background: var(--success); }
+    .dot-overdue { background: var(--danger); }
+    .an-task-info { flex: 1; min-width: 0; }
+    .an-task-name { font-size: 13px; font-weight: 500; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .an-task-group { font-size: 12px; color: var(--gray-400); }
+    .an-task-progress-wrap { width: 80px; }
+    .an-task-progress-bar { height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden; }
+    .an-task-progress-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+    .an-task-pct { font-size: 11px; color: var(--gray-400); text-align: right; margin-top: 2px; }
+    .an-task-deadline { font-size: 12px; color: var(--gray-400); white-space: nowrap; }
+    .an-task-deadline.overdue { color: var(--danger); }
+
+    /* ── 状态筛选标签 ── */
+    .an-status-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .an-status-tab {
+      padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;
+      border: 1.5px solid var(--gray-200); background: var(--white);
+      color: var(--gray-500); cursor: pointer; transition: all 0.12s;
+    }
+    .an-status-tab.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+    /* ── 热力图 ── */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(53, 1fr);
+      gap: 2px;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      background: var(--gray-100);
+      cursor: pointer;
+      transition: opacity 0.1s;
+      position: relative;
+    }
+    .heatmap-cell:hover { opacity: 0.75; }
+    .heatmap-cell[data-level="1"] { background: #C7D7FD; }
+    .heatmap-cell[data-level="2"] { background: #93AEFB; }
+    .heatmap-cell[data-level="3"] { background: #6B8EFF; }
+    .heatmap-cell[data-level="4"] { background: var(--primary); }
+    .heatmap-months { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-400); margin-bottom: 4px; }
+    .heatmap-legend { display: flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11px; color: var(--gray-400); }
+    .heatmap-legend-cell { width: 12px; height: 12px; border-radius: 2px; }
+
+    /* ── 智能小结 ── */
+    .an-summary-card {
+      background: linear-gradient(135deg, #F0F4FF 0%, #FFF7ED 100%);
+      border: 1px solid #C7D7FD;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+    .an-summary-title { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .an-summary-items { display: flex; flex-direction: column; gap: 6px; }
+    .an-summary-item { font-size: 13px; color: var(--gray-700); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+    .an-summary-item .bullet { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── 效率曲线 ── */
+    .an-efficiency-legend {
+      display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .an-eff-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--gray-600); }
+    .an-eff-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── 响应式 ── */
+    @media (max-width: 900px) {
+      .an-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .an-charts-grid { grid-template-columns: 1fr; }
+      .an-chart-card.full { grid-column: 1; }
+    }
+    @media (max-width: 600px) {
+      .an-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .an-profile { padding: 16px; }
+      .an-kpi-num { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user" onclick="window.location.href='settings.html'">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="window.location.href='dashboard.html'">← 返回</button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+
+    <!-- 用户信息卡 -->
+    <div class="an-profile" id="an-profile">
+      <div class="an-avatar" id="an-avatar"></div>
+      <div class="an-profile-info">
+        <div class="an-name" id="an-name"></div>
+        <div class="an-meta" id="an-meta"></div>
+        <div class="an-skills" id="an-skills"></div>
+      </div>
+    </div>
+
+    <!-- 时间筛选 -->
+    <div class="an-filter-bar">
+      <span class="an-filter-label">时间范围</span>
+      <div class="an-period-group">
+        <button class="an-period-btn active" data-period="today">今日</button>
+        <button class="an-period-btn" data-period="week">本周</button>
+        <button class="an-period-btn" data-period="month">本月</button>
+        <button class="an-period-btn" data-period="custom">自定义</button>
+      </div>
+      <div class="an-date-range" id="an-date-range">
+        <input type="date" class="an-date-input" id="date-from">
+        <span style="color:var(--gray-400);font-size:13px">至</span>
+        <input type="date" class="an-date-input" id="date-to">
+        <button class="btn btn-primary btn-sm" onclick="applyCustomRange()">应用</button>
+      </div>
+    </div>
+
+    <!-- 智能小结 -->
+    <div class="an-summary-card" id="an-summary-card">
+      <div class="an-summary-title">✨ 数据小结</div>
+      <div class="an-summary-items" id="an-summary-items"></div>
+    </div>
+
+    <!-- KPI 卡片 -->
+    <div class="an-kpi-grid">
+      <div class="an-kpi-card">
+        <div class="an-kpi-icon">📋</div>
+        <div class="an-kpi-num blue" id="kpi-total">0</div>
+        <div class="an-kpi-label">总参与任务</div>
+      </div>
+      <div class="an-kpi-card">
+        <div class="an-kpi-icon">✅</div>
+        <div class="an-kpi-num green" id="kpi-done">0</div>
+        <div class="an-kpi-label">已完成</div>
+      </div>
+      <div class="an-kpi-card">
+        <div class="an-kpi-icon">⚡</div>
+        <div class="an-kpi-num yellow" id="kpi-doing">0</div>
+        <div class="an-kpi-label">进行中</div>
+      </div>
+      <div class="an-kpi-card">
+        <div class="an-kpi-icon">🎯</div>
+        <div class="an-kpi-num purple" id="kpi-rate">0%</div>
+        <div class="an-kpi-label">完成率</div>
+      </div>
+      <div class="an-kpi-card">
+        <div class="an-kpi-icon">⏰</div>
+        <div class="an-kpi-num red" id="kpi-overdue">0</div>
+        <div class="an-kpi-label">逾期任务</div>
+      </div>
+    </div>
+
+    <!-- 图表区 -->
+    <div class="an-charts-grid">
+
+      <!-- 折线图：新增 vs 完成趋势 -->
+      <div class="an-chart-card full">
+        <div class="an-chart-title">📈 任务趋势</div>
+        <div class="an-chart-desc">新增任务与完成任务的周期变化</div>
+        <div class="an-chart-wrap" style="height:220px">
+          <canvas id="chart-line"></canvas>
+        </div>
+      </div>
+
+      <!-- 环形图：技能分类占比 -->
+      <div class="an-chart-card">
+        <div class="an-chart-title">🍩 技能领域分布</div>
+        <div class="an-chart-desc">按擅长领域统计任务占比</div>
+        <div class="an-chart-wrap" style="height:220px">
+          <canvas id="chart-donut"></canvas>
+        </div>
+      </div>
+
+      <!-- 柱状图：组长/组员对比 -->
+      <div class="an-chart-card">
+        <div class="an-chart-title">📊 角色任务对比</div>
+        <div class="an-chart-desc">组长分配 vs 组员执行的任务量</div>
+        <div class="an-chart-wrap" style="height:220px">
+          <canvas id="chart-bar"></canvas>
+        </div>
+      </div>
+
+      <!-- 个人效率曲线 -->
+      <div class="an-chart-card full">
+        <div class="an-chart-title">📉 个人效率曲线</div>
+        <div class="an-chart-desc">按时完成率与平均完成耗时趋势</div>
+        <div class="an-efficiency-legend">
+          <div class="an-eff-item"><div class="an-eff-dot" style="background:#10B981"></div>按时完成率 (%)</div>
+          <div class="an-eff-item"><div class="an-eff-dot" style="background:#F59E0B"></div>平均耗时 (天)</div>
+        </div>
+        <div class="an-chart-wrap" style="height:180px">
+          <canvas id="chart-efficiency"></canvas>
+        </div>
+      </div>
+
+      <!-- 活跃度热力图 -->
+      <div class="an-chart-card full">
+        <div class="an-chart-title">🔥 活跃度热力图</div>
+        <div class="an-chart-desc">过去一年每日任务活跃情况</div>
+        <div class="heatmap-months" id="heatmap-months"></div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+        <div class="heatmap-legend">
+          <span>少</span>
+          <div class="heatmap-legend-cell" style="background:var(--gray-100)"></div>
+          <div class="heatmap-legend-cell" data-level="1" style="background:#C7D7FD"></div>
+          <div class="heatmap-legend-cell" data-level="2" style="background:#93AEFB"></div>
+          <div class="heatmap-legend-cell" data-level="3" style="background:#6B8EFF"></div>
+          <div class="heatmap-legend-cell" data-level="4" style="background:var(--primary)"></div>
+          <span>多</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 任务明细列表 -->
+    <div class="an-chart-card" style="margin-bottom:32px">
+      <div class="an-chart-title">📝 任务明细</div>
+      <div class="an-chart-desc">所有任务的完成状态与进度</div>
+      <div class="an-status-tabs" id="an-status-tabs">
+        <div class="an-status-tab active" data-status="all">全部</div>
+        <div class="an-status-tab" data-status="todo">待开始</div>
+        <div class="an-status-tab" data-status="doing">进行中</div>
+        <div class="an-status-tab" data-status="done">已完成</div>
+        <div class="an-status-tab" data-status="overdue">已逾期</div>
+      </div>
+      <div class="an-task-list" id="an-task-list"></div>
+    </div>
+
+  </div>
+
+  <!-- Tooltip -->
+  <div id="heatmap-tooltip" style="
+    position:fixed; background:rgba(0,0,0,0.75); color:#fff;
+    padding:5px 10px; border-radius:6px; font-size:12px;
+    pointer-events:none; display:none; z-index:9999;
+  "></div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/analytics.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initAnalytics);
+  </script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作业互评 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user" onclick="window.location.href='settings.html'">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="Session.clear();window.location.href='index.html'">退出</button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div id="alert-container"></div>
+
+    <!-- 页头 -->
+    <div class="page-header">
+      <div class="back-row">
+        <a class="back-link" id="back-to-group" href="dashboard.html">← 返回小组</a>
+      </div>
+      <div class="page-header-row">
+        <div>
+          <div class="page-title" id="review-task-title">作业互评</div>
+          <div class="page-subtitle" id="review-task-meta"></div>
+        </div>
+        <div class="page-header-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="set-deadline-btn" onclick="openDeadlineModal()">⏰ 截止时间</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="switchView('timeline')" id="timeline-view-btn">📅 时间线</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="switchView('board')" id="board-view-btn">📋 看板</button>
+          <button type="button" class="btn btn-primary btn-sm" id="submit-version-btn" onclick="openSubmitModal()">📤 提交作业</button>
+        </div>
+      </div>
+      <div id="deadline-banner" class="hidden"></div>
+    </div>
+
+    <!-- 看板视图 -->
+    <div id="board-view">
+      <div class="review-layout">
+        <div class="review-main">
+
+          <!-- 当前版本 -->
+          <div class="card settings-card" id="current-version-card">
+            <div class="card-header">
+              <div class="review-card-header-row">
+                <div class="card-heading" id="current-version-heading">当前版本</div>
+                <div class="review-card-actions" id="current-version-actions"></div>
+              </div>
+            </div>
+            <div class="card-body" id="current-version-body">
+              <div class="loading-hint">请从右侧选择一个版本查看</div>
+            </div>
+          </div>
+
+          <!-- 版本对比 -->
+          <div class="card settings-card hidden" id="diff-card">
+            <div class="card-header">
+              <div class="review-card-header-row">
+                <div class="card-heading">版本对比</div>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeDiff()">关闭对比</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="diff-panel" id="diff-panel"></div>
+            </div>
+          </div>
+
+          <!-- 评论区 -->
+          <div class="card settings-card">
+            <div class="card-header">
+              <div class="review-card-header-row">
+                <div class="card-heading">评论与建议 <span class="badge badge-gray" id="comment-count">0</span></div>
+                <div class="review-filter-btns">
+                  <button type="button" class="btn btn-ghost btn-sm" id="filter-all-btn" onclick="filterComments('all')">全部</button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="filter-pending-btn" onclick="filterComments('pending')">待处理</button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="filter-resolved-btn" onclick="filterComments('resolved')">已处理</button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-group" id="comment-input-section">
+                <label class="form-label">添加评论</label>
+                <div class="comment-input-area">
+                  <textarea class="comment-textarea" id="comment-text" placeholder="写下你的修改建议或评论..." maxlength="500" oninput="updateCharCount()"></textarea>
+                  <div class="comment-input-footer">
+                    <span class="comment-char-count"><span id="char-count">0</span>/500</span>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="submitComment()">发布评论</button>
+                  </div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="comment-list" id="comment-list">
+                <div class="empty-state">
+                  <div class="empty-state-icon">💬</div>
+                  <div class="empty-state-text">还没有评论</div>
+                  <div class="empty-state-hint">成为第一个提出建议的人</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 侧边栏 -->
+        <div class="review-sidebar">
+          <div class="card">
+            <div class="card-header">
+              <div class="review-card-header-row">
+                <div class="card-heading">版本历史</div>
+                <span class="badge badge-gray" id="version-count">0 个</span>
+              </div>
+            </div>
+            <div class="card-body review-sidebar-body">
+              <div class="version-list" id="version-list">
+                <div class="loading-hint">暂无提交记录</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card review-sidebar-card">
+            <div class="card-header">
+              <div class="card-heading">待处理建议 <span class="badge badge-red hidden" id="pending-count-badge"></span></div>
+            </div>
+            <div class="card-body review-sidebar-body">
+              <div id="pending-summary">
+                <div class="loading-hint">暂无待处理建议</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 时间线视图 -->
+    <div id="timeline-view" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-heading">完整修改记录</div>
+        </div>
+        <div class="card-body">
+          <div id="timeline-list">
+            <div class="loading-hint">暂无记录</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提交作业弹窗（原版本） -->
+  <div class="modal-overlay" id="submit-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div class="modal-title">📤 提交作业版本</div>
+        <button type="button" class="modal-close" onclick="closeModal('submit-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="submit-title">版本说明 <span class="label-required">*</span></label>
+          <input class="form-input" type="text" id="submit-title" placeholder="例如：初稿 / 根据评论修改后的第2版">
+          <div class="form-error hidden" id="submit-title-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="submit-desc">修改说明</label>
+          <textarea class="form-input textarea-resize" id="submit-desc" rows="3" placeholder="描述本次提交的内容或修改点..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">上传文件 <span class="label-required">*</span></label>
+          <div class="upload-version-zone" id="submit-upload-zone" onclick="document.getElementById('submit-file-input').click()">
+            <div class="upload-zone-icon">📁</div>
+            <div class="upload-zone-text" id="submit-file-name">点击选择文件</div>
+            <div class="upload-zone-hint">支持 Word/PPT/PDF/Excel/图片/压缩包，最大 200MB</div>
+          </div>
+          <input type="file" id="submit-file-input" class="hidden" accept=".doc,.docx,.ppt,.pptx,.pdf,.jpg,.jpeg,.png,.gif,.zip,.rar,.xlsx,.xls,.txt,.mp4,.mov,.avi,.mkv,.webm,.m4v">
+          <div class="form-error hidden" id="submit-file-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('submit-modal')">取消</button>
+        <button type="button" class="btn btn-primary" id="submit-confirm-btn" onclick="handleSubmitVersion()">提交</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上传代改版本弹窗 -->
+  <div class="modal-overlay" id="revision-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div class="modal-title">✏️ 上传代改版本</div>
+        <button type="button" class="modal-close" onclick="closeModal('revision-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="notify-banner" id="revision-original-info"></div>
+        <div class="form-group">
+          <label class="form-label" for="revision-note">修改说明 <span class="label-required">*</span></label>
+          <textarea class="form-input textarea-resize" id="revision-note" rows="4" placeholder="请详细说明：&#10;1. 修改了哪些内容&#10;2. 修改原因&#10;3. 建议原作者注意的地方"></textarea>
+          <div class="form-error hidden" id="revision-note-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">上传代改文件 <span class="label-required">*</span></label>
+          <div class="upload-version-zone" id="revision-upload-zone" onclick="document.getElementById('revision-file-input').click()">
+            <div class="upload-zone-icon">✏️</div>
+            <div class="upload-zone-text" id="revision-file-name">点击选择代改后的文件</div>
+            <div class="upload-zone-hint">支持 Word/PPT/PDF/Excel/图片/压缩包，最大 200MB</div>
+          </div>
+          <input type="file" id="revision-file-input" class="hidden" accept=".doc,.docx,.ppt,.pptx,.pdf,.jpg,.jpeg,.png,.gif,.zip,.rar,.xlsx,.xls,.txt,.mp4,.mov,.avi,.mkv,.webm,.m4v">
+          <div class="form-error hidden" id="revision-file-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('revision-modal')">取消</button>
+        <button type="button" class="btn btn-primary" id="revision-confirm-btn" onclick="handleSubmitRevision()">提交代改</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置截止时间弹窗 -->
+  <div class="modal-overlay" id="deadline-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">⏰ 设置截止时间</div>
+        <button type="button" class="modal-close" onclick="closeModal('deadline-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="deadline-row">
+          <div class="deadline-item">
+            <label class="deadline-label" for="submit-deadline-input">作业提交截止</label>
+            <input class="form-input" type="datetime-local" id="submit-deadline-input">
+          </div>
+          <div class="deadline-item">
+            <label class="deadline-label" for="review-deadline-input">互评截止时间</label>
+            <input class="form-input" type="datetime-local" id="review-deadline-input">
+          </div>
+        </div>
+        <div class="form-hint">截止时间对本小组所有成员可见</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('deadline-modal')">取消</button>
+        <button type="button" class="btn btn-primary" onclick="saveDeadlines()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/review.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initReviewPage);
+  </script>
+</body>
+</html>

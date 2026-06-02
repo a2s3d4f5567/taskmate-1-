@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskMate — 小组作业协作平台</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--gray-200); }
+    .auth-tab {
+      flex: 1; text-align: center; padding: 10px; font-size: 15px; font-weight: 500;
+      color: var(--gray-500); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .demo-hint {
+      background: var(--primary-light); border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: 13px; color: var(--primary-dark); margin-bottom: 20px; line-height: 1.6;
+    }
+    .register-heading { margin-bottom: 20px; }
+    .register-title { font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+    .register-subtitle { font-size: 13px; color: var(--gray-500); }
+    .register-agreement {
+      margin-top: 14px; text-align: center; font-size: 12px; color: var(--gray-400); line-height: 1.7;
+    }
+    .register-agreement a { color: var(--gray-500); text-decoration: underline; }
+    .register-agreement a:hover { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card card">
+      <div class="card-body">
+        <div class="auth-logo">
+          <div class="auth-logo-icon">✓</div>
+          <div class="auth-logo-name">TaskMate</div>
+          <div class="auth-logo-tagline">小组作业协作平台，告别微信群混乱</div>
+        </div>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tab-login">登录</div>
+          <div class="auth-tab" id="tab-register">注册</div>
+        </div>
+
+        <!-- 登录表单 -->
+        <form id="login-form" novalidate>
+          <div class="demo-hint">
+            🎓 演示账号：<strong>alice@demo.com</strong> / 密码：<strong>demo123</strong>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-email">邮箱</label>
+            <input class="form-input" type="email" id="login-email" placeholder="请输入邮箱" autocomplete="email">
+            <div class="form-error hidden" id="login-email-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">密码</label>
+            <input class="form-input" type="password" id="login-password" placeholder="请输入密码" autocomplete="current-password">
+            <div class="form-error hidden" id="login-password-error"></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg btn-mt-sm">登录</button>
+          <button type="button" class="btn btn-secondary btn-block btn-mt-md" id="demo-login">一键体验演示账号</button>
+        </form>
+
+        <!-- 注册表单 -->
+        <form id="register-form" class="hidden" novalidate>
+          <div class="register-heading">
+            <div class="register-title">创建你的账号</div>
+            <div class="register-subtitle">加入 TaskMate，开启高效协作之旅</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-name">用户名</label>
+            <input class="form-input" type="text" id="reg-name" placeholder="请输入用户名或账号" autocomplete="username">
+            <div class="form-hint">4–20 位字母、数字或下划线</div>
+            <div class="form-error hidden" id="reg-name-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-phone">手机号</label>
+            <input class="form-input" type="tel" id="reg-phone" placeholder="请输入手机号" autocomplete="tel" maxlength="11">
+            <div class="form-error hidden" id="reg-phone-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-password">设置密码</label>
+            <input class="form-input" type="password" id="reg-password" placeholder="请设置登录密码" autocomplete="new-password">
+            <div class="form-hint">至少 8 位，建议包含字母与数字</div>
+            <div class="form-error hidden" id="reg-password-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-confirm">确认密码</label>
+            <input class="form-input" type="password" id="reg-confirm" placeholder="请再次输入密码" autocomplete="new-password">
+            <div class="form-error hidden" id="reg-confirm-error"></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg btn-mt-sm">注册并开始使用</button>
+          <div class="register-agreement">
+            注册即表示你已阅读并同意
+            <a href="#" onclick="return false">《用户服务协议》</a>与<a href="#" onclick="return false">《隐私政策》</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initAuthPage);
+  </script>
+</body>
+</html>

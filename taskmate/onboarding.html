@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个性化设置 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── 整体布局 ── */
+    .ob-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px 16px 40px;
+      background: linear-gradient(160deg, #EEF1FE 0%, #F9FAFB 60%);
+    }
+
+    .ob-header {
+      text-align: center;
+      margin-bottom: 28px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .ob-logo { font-size: 28px; margin-bottom: 6px; }
+    .ob-title { font-size: 22px; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
+    .ob-subtitle { font-size: 14px; color: var(--gray-500); line-height: 1.6; }
+
+    /* ── 整页表单卡片 ── */
+    .ob-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .ob-card-body { padding: 28px 24px 24px; }
+
+    .ob-section { margin-bottom: 28px; }
+    .ob-section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ob-section-title .icon { font-size: 16px; }
+    .ob-section-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 14px; }
+
+    /* ── 技能标签 ── */
+    .skill-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .skill-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1.5px solid var(--gray-200);
+      background: var(--gray-50);
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .skill-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .skill-chip.selected {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--white);
+    }
+    .skill-chip.custom-chip { border-style: dashed; }
+
+    .custom-skill-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .custom-skill-input {
+      flex: 1;
+      padding: 7px 12px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 20px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: var(--font);
+    }
+    .custom-skill-input:focus { border-color: var(--primary); }
+    .custom-skill-input::placeholder { color: var(--gray-400); }
+    .btn-add-skill {
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-add-skill:hover { background: #dde4fd; }
+
+    /* ── 角色选择 ── */
+    .role-options { display: flex; flex-direction: column; gap: 10px; }
+    .role-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--gray-200);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--white);
+    }
+    .role-option:hover { border-color: var(--primary); background: var(--primary-light); }
+    .role-option.selected { border-color: var(--primary); background: var(--primary-light); }
+    .role-option input[type="radio"] { display: none; }
+    .role-radio {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--gray-300);
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s;
+    }
+    .role-option.selected .role-radio {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+    .role-option.selected .role-radio::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--white);
+    }
+    .role-info { flex: 1; }
+    .role-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 3px;
+    }
+    .role-desc { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+    .role-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .badge-leader { background: #FEF3C7; color: #92400E; }
+    .badge-member { background: #D1FAE5; color: #065F46; }
+
+    /* ── 场景切换 ── */
+    .scene-toggle {
+      display: flex;
+      background: var(--gray-100);
+      border-radius: 8px;
+      padding: 3px;
+      margin-bottom: 20px;
+      gap: 2px;
+    }
+    .scene-btn {
+      flex: 1;
+      text-align: center;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-500);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      background: transparent;
+    }
+    .scene-btn.active {
+      background: var(--white);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ── 底部按钮 ── */
+    .ob-footer { padding: 0 24px 24px; }
+    .ob-skip { text-align: center; margin-top: 14px; font-size: 13px; color: var(--gray-400); cursor: pointer; }
+    .ob-skip:hover { color: var(--gray-600); }
+
+    /* ── 进度条（分步弹窗用） ── */
+    .step-progress {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 24px;
+    }
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--gray-200);
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-400);
+      flex-shrink: 0;
+      transition: all 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+    .step-dot.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .step-dot.done { border-color: var(--primary); background: var(--primary); color: var(--white); }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--gray-200);
+      transition: background 0.2s;
+    }
+    .step-line.done { background: var(--primary); }
+
+    /* ── 分步弹窗 ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-sheet {
+      width: 100%;
+      max-width: 520px;
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 24px 32px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.open .modal-sheet { transform: translateY(0); }
+    .modal-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--gray-200);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+    .modal-step { display: none; }
+    .modal-step.active { display: block; }
+    .modal-step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .modal-step-desc { font-size: 14px; color: var(--gray-500); margin-bottom: 20px; line-height: 1.6; }
+    .modal-nav {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .modal-nav .btn { flex: 1; }
+
+    /* ── 切换入口 ── */
+    .view-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+    .view-toggle .btn { font-size: 13px; }
+
+    /* ── 完成状态 ── */
+    .ob-done {
+      text-align: center;
+      padding: 32px 24px;
+      display: none;
+    }
+    .ob-done.show { display: block; }
+    .ob-done-icon { font-size: 48px; margin-bottom: 12px; }
+    .ob-done-title { font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+    .ob-done-desc { font-size: 14px; color: var(--gray-500); margin-bottom: 24px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="ob-page">
+    <div class="ob-header">
+      <div class="ob-logo">✓</div>
+      <div class="ob-title">欢迎加入 TaskMate</div>
+      <div class="ob-subtitle">花 30 秒告诉我们你的情况<br>让协作从第一天就顺畅起来</div>
+    </div>
+
+    <!-- 视图切换入口（演示用） -->
+    <div class="view-toggle">
+      <button class="btn btn-secondary btn-sm" id="btn-show-fullpage">整页表单</button>
+      <button class="btn btn-secondary btn-sm" id="btn-show-steps">分步弹窗</button>
+    </div>
+
+    <!-- ════════════════════════════════
+         整页表单视图
+    ════════════════════════════════ -->
+    <div class="ob-card" id="fullpage-view">
+      <div class="ob-card-body">
+
+        <!-- 场景切换 -->
+        <div class="scene-toggle" id="scene-toggle-full">
+          <button class="scene-btn active" data-scene="student">🎓 学生组队</button>
+          <button class="scene-btn" data-scene="work">💼 职场协作</button>
+        </div>
+
+        <!-- 技能擅长区 -->
+        <div class="ob-section">
+          <div class="ob-section-title">
+            <span class="icon">⚡</span>
+            <span id="skill-section-title-full">你擅长哪些方向？</span>
+          </div>
+          <div class="ob-section-desc" id="skill-section-desc-full">可多选，帮助组长合理分配任务</div>
+          <div class="skill-grid" id="skill-grid-full"></div>
+          <div class="custom-skill-row">
+            <input class="custom-skill-input" id="custom-skill-input-full" type="text" placeholder="其他技能，回车添加" maxlength="12">
+            <button class="btn-add-skill" id="btn-add-skill-full">+ 添加</button>
+          </div>
+        </div>
+
+        <!-- 角色选择区 -->
+        <div class="ob-section">
+          <div class="ob-section-title">
+            <span class="icon">👤</span>
+            <span id="role-section-title-full">你在团队中的角色</span>
+          </div>
+          <div class="ob-section-desc" id="role-section-desc-full">选择后可解锁对应功能权限</div>
+          <div class="role-options" id="role-options-full"></div>
+        </div>
+
+      </div>
+      <div class="ob-footer">
+        <button class="btn btn-primary btn-block btn-lg" id="btn-submit-full">完成设置，进入主页</button>
+        <div class="ob-skip" id="skip-full">暂时跳过，稍后在设置中修改</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         分步弹窗触发按钮（整页隐藏时显示）
+    ════════════════════════════════ -->
+    <div class="ob-card hidden" id="steps-entry-card">
+      <div class="ob-card-body" style="text-align:center; padding: 40px 24px;">
+        <div style="font-size:40px; margin-bottom:12px;">🚀</div>
+        <div style="font-size:18px; font-weight:700; color:var(--gray-900); margin-bottom:8px;">准备好了吗？</div>
+        <div style="font-size:14px; color:var(--gray-500); margin-bottom:24px;">点击下方按钮，用分步引导完成个性化设置</div>
+        <button class="btn btn-primary btn-lg btn-block" id="btn-open-modal">开始个性化设置</button>
+        <div class="ob-skip" id="skip-steps">暂时跳过</div>
+      </div>
+    </div>
+
+  </div><!-- /ob-page -->
+
+  <!-- ════════════════════════════════
+       分步弹窗（Bottom Sheet）
+  ════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+
+      <!-- 进度指示 -->
+      <div class="step-progress">
+        <div class="step-dot active" id="sdot-1">1</div>
+        <div class="step-line" id="sline-1"></div>
+        <div class="step-dot" id="sdot-2">2</div>
+        <div class="step-line" id="sline-2"></div>
+        <div class="step-dot" id="sdot-3">3</div>
+      </div>
+
+      <!-- Step 1：场景选择 -->
+      <div class="modal-step active" id="modal-step-1">
+        <div class="modal-step-title">你主要用来做什么？</div>
+        <div class="modal-step-desc">选择使用场景，我们会为你推荐更合适的功能和文案风格</div>
+        <div class="scene-toggle" id="scene-toggle-modal" style="margin-bottom:0">
+          <button class="scene-btn active" data-scene="student">🎓 学生组队</button>
+          <button class="scene-btn" data-scene="work">💼 职场协作</button>
+        </div>
+        <div class="modal-nav">
+          <button class="btn btn-primary" id="modal-next-1">下一步</button>
+        </div>
+      </div>
+
+      <!-- Step 2：技能选择 -->
+      <div class="modal-step" id="modal-step-2">
+        <div class="modal-step-title" id="skill-step-title">你擅长哪些方向？</div>
+        <div class="modal-step-desc" id="skill-step-desc">可多选，帮助组长合理分配任务</div>
+        <div class="skill-grid" id="skill-grid-modal"></div>
+        <div class="custom-skill-row" style="margin-top:4px">
+          <input class="custom-skill-input" id="custom-skill-input-modal" type="text" placeholder="其他技能，回车添加" maxlength="12">
+          <button class="btn-add-skill" id="btn-add-skill-modal">+ 添加</button>
+        </div>
+        <div class="modal-nav">
+          <button class="btn btn-secondary" id="modal-back-2">上一步</button>
+          <button class="btn btn-primary" id="modal-next-2">下一步</button>
+        </div>
+      </div>
+
+      <!-- Step 3：角色选择 -->
+      <div class="modal-step" id="modal-step-3">
+        <div class="modal-step-title" id="role-step-title">你在团队中的角色</div>
+        <div class="modal-step-desc" id="role-step-desc">选择后可解锁对应功能权限</div>
+        <div class="role-options" id="role-options-modal"></div>
+        <div class="modal-nav">
+          <button class="btn btn-secondary" id="modal-back-3">上一步</button>
+          <button class="btn btn-primary" id="modal-submit">完成设置</button>
+        </div>
+      </div>
+
+      <!-- 完成 -->
+      <div class="ob-done" id="modal-done">
+        <div class="ob-done-icon">🎉</div>
+        <div class="ob-done-title" id="done-title">设置完成！</div>
+        <div class="ob-done-desc" id="done-desc">你的个人档案已保存，现在去看看你的任务面板吧</div>
+        <button class="btn btn-primary btn-block btn-lg" id="btn-go-dashboard">进入主页</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initOnboarding);
+  </script>
+</body>
+</html>

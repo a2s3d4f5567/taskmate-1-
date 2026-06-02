@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>消息中心 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .messages-container { max-width: 800px; margin: 0 auto; }
+    .msg-tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--gray-200); }
+    .msg-tab {
+      padding: 10px 20px; font-size: 14px; font-weight: 500;
+      color: var(--gray-500); cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.15s;
+    }
+    .msg-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .msg-tab .badge { margin-left: 6px; }
+    .msg-list { display: flex; flex-direction: column; gap: 8px; }
+    .msg-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 16px; border-radius: var(--radius);
+      border: 1px solid var(--gray-100); background: var(--white);
+      transition: background 0.12s; cursor: pointer;
+    }
+    .msg-item:hover { background: var(--gray-50); }
+    .msg-item.unread { background: var(--primary-light); border-color: var(--primary); }
+    .msg-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--primary); color: #fff; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; flex-shrink: 0;
+    }
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-title { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-bottom: 4px; }
+    .msg-preview { font-size: 13px; color: var(--gray-500); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .msg-meta { text-align: right; flex-shrink: 0; }
+    .msg-time { font-size: 12px; color: var(--gray-400); margin-bottom: 4px; }
+    .msg-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); display: inline-block; }
+    .msg-empty { text-align: center; padding: 60px 20px; }
+    .msg-empty-icon { font-size: 56px; margin-bottom: 16px; }
+    .msg-empty-title { font-size: 16px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; }
+    .msg-empty-desc { font-size: 14px; color: var(--gray-400); max-width: 360px; margin: 0 auto; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user" onclick="window.location.href='settings.html'">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="Session.clear();window.location.href='index.html'">退出</button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="page-header">
+      <div class="back-row">
+        <a href="dashboard.html" class="back-link">← 返回面板</a>
+      </div>
+      <div class="page-title">💬 消息中心</div>
+      <div class="page-subtitle">查看小组协作中的系统通知与消息</div>
+    </div>
+
+    <div class="messages-container">
+      <div class="msg-tabs">
+        <div class="msg-tab active" onclick="filterMessages('all', this)">全部消息</div>
+        <div class="msg-tab" onclick="filterMessages('unread', this)">未读 <span class="badge badge-red" id="unread-badge">0</span></div>
+        <div class="msg-tab" onclick="filterMessages('system', this)">系统通知</div>
+      </div>
+
+      <div class="msg-list" id="msg-list">
+        <div class="msg-empty">
+          <div class="msg-empty-icon">📭</div>
+          <div class="msg-empty-title">暂无消息</div>
+          <div class="msg-empty-desc">当有新任务分配、评论回复或系统通知时，消息会显示在这里</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/messages.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initMessagesPage);
+  </script>
+</body>
+</html>

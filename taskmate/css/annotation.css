@@ -1,0 +1,549 @@
+/* ==================== 批注页面样式 ==================== */
+
+.anno-page {
+  max-width: 100%;
+  height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.anno-header {
+  padding: 16px 24px 12px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--white);
+  flex-shrink: 0;
+}
+
+.anno-back-row {
+  margin-bottom: 8px;
+}
+
+.anno-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.anno-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.anno-subtitle {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.anno-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.anno-toolbar {
+  display: flex;
+  gap: 4px;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+}
+
+.anno-tool-btn {
+  border-radius: var(--radius-sm);
+  border: none !important;
+  background: transparent;
+  color: var(--gray-600);
+  font-size: 13px;
+}
+
+.anno-tool-btn:hover {
+  background: var(--white) !important;
+}
+
+.anno-tool-btn.active {
+  background: var(--white) !important;
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.anno-count {
+  font-size: 13px;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+/* ==================== 主布局 ==================== */
+
+.anno-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: var(--gray-900);
+}
+
+/* ==================== 画布区域 ==================== */
+
+.anno-canvas-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.anno-canvas-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(31, 41, 55, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.anno-canvas-controls .btn-ghost {
+  color: var(--gray-300);
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.anno-canvas-controls .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.anno-zoom-label {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 44px;
+  text-align: center;
+  color: var(--gray-300);
+  user-select: none;
+}
+
+.anno-canvas-wrapper {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  cursor: crosshair;
+  position: relative;
+}
+
+.anno-canvas-wrapper.none-tool {
+  cursor: grab;
+}
+
+.anno-canvas-wrapper.none-tool:active {
+  cursor: grabbing;
+}
+
+.anno-canvas-wrapper.panning {
+  cursor: grabbing;
+}
+
+.anno-canvas {
+  position: relative;
+  display: inline-block;
+  transform-origin: 0 0;
+  margin: 20px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  line-height: 0;
+  user-select: none;
+}
+
+.anno-image {
+  display: block;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* SVG 标注层 - 覆盖在图片上 */
+.anno-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.anno-svg * {
+  pointer-events: all;
+}
+
+/* ==================== 画布提示 ==================== */
+
+.anno-canvas-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: var(--gray-300);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+/* ==================== 图钉标记 ==================== */
+
+.anno-pin {
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.anno-pin:hover {
+  transform: scale(1.3);
+}
+
+.anno-pin-circle {
+  fill: #EF4444;
+  stroke: #fff;
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+.anno-pin-circle.warning {
+  fill: #F59E0B;
+}
+
+.anno-pin-circle.info {
+  fill: #4F6EF7;
+}
+
+.anno-pin-circle.critical {
+  fill: #EF4444;
+}
+
+.anno-pin-circle.resolved-status {
+  fill: #10B981;
+  opacity: 0.6;
+}
+
+.anno-pin-number {
+  fill: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  font-family: -apple-system, sans-serif;
+}
+
+/* 框选区域 */
+.anno-rect {
+  fill: rgba(239, 68, 68, 0.08);
+  stroke: #EF4444;
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  vector-effect: non-scaling-stroke;
+}
+
+.anno-rect:hover {
+  fill: rgba(239, 68, 68, 0.18);
+  stroke-width: 3;
+}
+
+.anno-rect.warning {
+  fill: rgba(245, 158, 11, 0.08);
+  stroke: #F59E0B;
+}
+
+.anno-rect.info {
+  fill: rgba(79, 110, 247, 0.08);
+  stroke: #4F6EF7;
+}
+
+.anno-rect.critical {
+  stroke: #EF4444;
+}
+
+.anno-rect.resolved-status {
+  fill: rgba(16, 185, 129, 0.05);
+  stroke: #10B981;
+}
+
+.anno-rect-label {
+  fill: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  pointer-events: none;
+  font-family: -apple-system, sans-serif;
+}
+
+.anno-rect-label-bg {
+  fill: #EF4444;
+  fill-opacity: 0.9;
+}
+
+.anno-rect-label-bg.warning { fill: #F59E0B; }
+.anno-rect-label-bg.info { fill: #4F6EF7; }
+.anno-rect-label-bg.critical { fill: #EF4444; }
+.anno-rect-label-bg.resolved-status { fill: #10B981; }
+
+/* ==================== 侧边栏 ==================== */
+
+.anno-sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-left: 1px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.anno-sidebar-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.anno-sidebar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.anno-filter-btns {
+  display: flex;
+  gap: 3px;
+}
+
+.anno-filter-btn {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.anno-filter-btn.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.anno-filter-btn.active:hover {
+  background: var(--primary-dark) !important;
+  color: #fff !important;
+}
+
+.anno-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* 批注项 */
+.anno-item {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-200);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: var(--white);
+}
+
+.anno-item:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.anno-item.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.anno-item.resolved {
+  background: var(--gray-50);
+  opacity: 0.7;
+}
+
+.anno-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.anno-item-pin {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.anno-item-pin.info {
+  background: #4F6EF7;
+}
+
+.anno-item-pin.warning {
+  background: #F59E0B;
+}
+
+.anno-item-pin.critical {
+  background: #EF4444;
+}
+
+.anno-item-pin.resolved-status {
+  background: #10B981;
+}
+
+.anno-item-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-800);
+  flex: 1;
+}
+
+.anno-item-time {
+  font-size: 11px;
+  color: var(--gray-400);
+}
+
+.anno-item-content {
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.anno-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.anno-item-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.anno-item-badge.info {
+  background: #EEF1FE;
+  color: #4F6EF7;
+}
+
+.anno-item-badge.warning {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.anno-item-badge.critical {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.anno-item-badge.resolved {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.anno-item-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.anno-item-actions .btn {
+  font-size: 12px;
+  padding: 3px 8px;
+}
+
+/* 批注严重程度选择 */
+.anno-severity-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.anno-severity-item {
+  cursor: pointer;
+}
+
+.anno-severity-item input[type="radio"] {
+  display: none;
+}
+
+.anno-severity-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.anno-severity-tag.info {
+  background: #EEF1FE;
+  color: #4F6EF7;
+}
+
+.anno-severity-tag.warning {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.anno-severity-tag.critical {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.anno-severity-item input:checked+.anno-severity-tag {
+  border-color: currentColor;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+/* ==================== 响应式 ==================== */
+
+@media (max-width: 900px) {
+  .anno-layout {
+    flex-direction: column;
+  }
+
+  .anno-sidebar {
+    width: 100%;
+    max-height: 280px;
+  }
+
+  .anno-canvas-wrapper {
+    min-height: 300px;
+  }
+}

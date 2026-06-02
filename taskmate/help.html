@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帮助中心 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .help-container { max-width: 860px; margin: 0 auto; }
+    .help-section { margin-bottom: 32px; }
+    .help-section-title {
+      font-size: 18px; font-weight: 700; color: var(--gray-900);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .help-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .help-card {
+      background: var(--white); border-radius: var(--radius);
+      border: 1px solid var(--gray-200); padding: 18px 20px;
+      transition: box-shadow 0.15s, transform 0.15s; cursor: pointer;
+    }
+    .help-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .help-card-icon { font-size: 28px; margin-bottom: 10px; }
+    .help-card-title { font-size: 15px; font-weight: 600; color: var(--gray-900); margin-bottom: 6px; }
+    .help-card-desc { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+    .help-faq { display: flex; flex-direction: column; gap: 8px; }
+    .help-faq-item {
+      background: var(--white); border-radius: var(--radius);
+      border: 1px solid var(--gray-200); overflow: hidden;
+    }
+    .help-faq-q {
+      padding: 14px 18px; font-size: 14px; font-weight: 600; color: var(--gray-800);
+      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      user-select: none; transition: background 0.12s;
+    }
+    .help-faq-q:hover { background: var(--gray-50); }
+    .help-faq-arrow { font-size: 12px; color: var(--gray-400); transition: transform 0.2s; }
+    .help-faq-item.open .help-faq-arrow { transform: rotate(180deg); }
+    .help-faq-a {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+      padding: 0 18px; font-size: 13px; color: var(--gray-600); line-height: 1.7;
+    }
+    .help-faq-item.open .help-faq-a {
+      max-height: 300px; padding: 0 18px 16px;
+    }
+    .help-contact {
+      background: linear-gradient(135deg, var(--primary-light) 0%, #FFF7ED 100%);
+      border: 1px solid var(--primary); border-radius: var(--radius-lg);
+      padding: 24px; text-align: center;
+    }
+    .help-contact-title { font-size: 16px; font-weight: 700; color: var(--primary-dark); margin-bottom: 6px; }
+    .help-contact-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user" onclick="window.location.href='settings.html'">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="Session.clear();window.location.href='index.html'">退出</button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="page-header">
+      <div class="back-row">
+        <a href="dashboard.html" class="back-link">← 返回面板</a>
+      </div>
+      <div class="page-title">❓ 帮助中心</div>
+      <div class="page-subtitle">快速了解 TaskMate 的各项功能与使用方法</div>
+    </div>
+
+    <div class="help-container">
+      <!-- 快速入门 -->
+      <div class="help-section">
+        <div class="help-section-title">🚀 快速入门</div>
+        <div class="help-grid">
+          <div class="help-card" onclick="scrollToFAQ('faq-group')">
+            <div class="help-card-icon">👥</div>
+            <div class="help-card-title">创建 / 加入小组</div>
+            <div class="help-card-desc">如何创建小组、生成邀请码让组员加入，或通过邀请码加入已有小组</div>
+          </div>
+          <div class="help-card" onclick="scrollToFAQ('faq-task')">
+            <div class="help-card-icon">📋</div>
+            <div class="help-card-title">发布与管理任务</div>
+            <div class="help-card-desc">创建任务、指定负责人、设置截止日期，以及看板拖拽更新状态</div>
+          </div>
+          <div class="help-card" onclick="scrollToFAQ('faq-bills')">
+            <div class="help-card-icon">💰</div>
+            <div class="help-card-title">账单与费用分摊</div>
+            <div class="help-card-desc">记录小组支出、均摊或自定义分摊、一键结算查看欠款明细</div>
+          </div>
+          <div class="help-card" onclick="scrollToFAQ('faq-review')">
+            <div class="help-card-icon">✏️</div>
+            <div class="help-card-title">作业互评与版本管理</div>
+            <div class="help-card-desc">提交多个版本作业、成员添加评论建议、上传代改文件</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 进阶功能 -->
+      <div class="help-section">
+        <div class="help-section-title">⚡ 进阶功能</div>
+        <div class="help-grid">
+          <div class="help-card" onclick="scrollToFAQ('faq-idea')">
+            <div class="help-card-icon">💡</div>
+            <div class="help-card-title">AI 思路白板</div>
+            <div class="help-card-desc">便签墙记录灵感，DeepSeek AI 自动梳理大纲、生成思维导图</div>
+          </div>
+          <div class="help-card" onclick="scrollToFAQ('faq-lottery')">
+            <div class="help-card-icon">🎲</div>
+            <div class="help-card-title">随机抽签与分工</div>
+            <div class="help-card-desc">随机选组长、任务抽签分工，解决"谁来做"的公平性问题</div>
+          </div>
+          <div class="help-card" onclick="scrollToFAQ('faq-annotation')">
+            <div class="help-card-icon">📌</div>
+            <div class="help-card-title">图片批注</div>
+            <div class="help-card-desc">在图片上添加图钉批注或框选区域，适合设计稿反馈</div>
+          </div>
+          <div class="help-card" onclick="scrollToFAQ('faq-analytics')">
+            <div class="help-card-icon">📊</div>
+            <div class="help-card-title">数据统计面板</div>
+            <div class="help-card-desc">查看个人任务完成率、效率趋势、活跃度热力图等可视化数据</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 常见问题 FAQ -->
+      <div class="help-section" id="help-faq-section">
+        <div class="help-section-title">🙋 常见问题</div>
+        <div class="help-faq">
+          <div class="help-faq-item" id="faq-group">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>如何创建小组并邀请成员？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              在面板页点击"创建小组"，填写名称、课程和简介后即可创建。创建成功后，小组页会生成一组 6 位邀请码，分享给组员即可。组员在面板页点击"加入小组"，输入邀请码即可加入。
+            </div>
+          </div>
+          <div class="help-faq-item" id="faq-task">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>如何发布任务并跟踪进度？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              进入小组详情页，点击"发布任务"按钮，填写任务标题、描述、负责人和截止日期。任务会出现在看板的"待开始"列，可通过拖拽到"进行中"或"已完成"来更新状态。页面顶部有整体进度条供全组查看。
+            </div>
+          </div>
+          <div class="help-faq-item" id="faq-bills">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>账单功能怎么使用？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              在小组页点击"账单"进入账单页面。点击"记一笔"添加支出，选择付款人、金额、分类和分摊方式（均摊/自定义/付款人全出）。侧边栏会实时显示各成员的余额和欠款明细。所有账单结清后可点击"一键结算"。
+            </div>
+          </div>
+          <div class="help-faq-item" id="faq-review">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>作业互评如何使用版本管理？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              在小组的任务详情中进入"作业互评"页面。成员可多次提交版本（附带文件），每个版本都有独立的评论区。其他成员可以添加评论建议，也可以上传"代改版本"帮助原作者改进。支持版本对比和截止时间设置。
+            </div>
+          </div>
+          <div class="help-faq-item" id="faq-idea">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>AI 思路白板怎么用？需要配置什么？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              在小组页点击"思路白板"进入。上方便签墙写下灵感，右侧面板可使用 DeepSeek AI 工具自动整理。首次使用需在项目根目录创建 .env 文件，填入 DEEPSEEK_API_KEY=你的密钥，然后运行 node server.js 启动代理服务。
+            </div>
+          </div>
+          <div class="help-faq-item" id="faq-lottery">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>抽签功能怎么保证公平性？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              小组页点击 "🎲 抽签" 提供两种模式：① 随机选组长 —— 可自定义参与成员范围，排除现有组长；② 任务抽签分工 —— 将未分配任务随机分配给组员。抽签结果可以导出为文本，支持全组可见确认。
+            </div>
+          </div>
+          <div class="help-faq-item" id="faq-annotation">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>图片批注支持哪些标注方式？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              支持两种标注方式：📌 图钉批注（在图片任意位置添加带编号的标记）和 🔲 框选区域（拖拽框选特定区域）。每条批注支持填写内容和选择严重程度。批注列表可按"全部/待处理/已处理"筛选。
+            </div>
+          </div>
+          <div class="help-faq-item" id="faq-analytics">
+            <div class="help-faq-q" onclick="toggleFAQ(this)">
+              <span>数据统计面板展示了哪些数据？</span>
+              <span class="help-faq-arrow">▼</span>
+            </div>
+            <div class="help-faq-a">
+              包含五大核心 KPI（总参与任务、已完成、进行中、完成率、逾期）；任务新增与完成趋势折线图；技能领域分布环形图；角色任务对比柱状图；个人效率曲线（按时完成率与平均耗时）；以及年度活跃度热力图。支持按今日/本周/本月/自定义时间范围筛选。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 联系与反馈 -->
+      <div class="help-section">
+        <div class="help-contact">
+          <div class="help-contact-title">📬 没有找到答案？</div>
+          <div class="help-contact-desc">如有其他问题或功能建议，欢迎随时反馈</div>
+          <button type="button" class="btn btn-primary" onclick="window.location.href='dashboard.html'">返回主面板</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script>
+    function initHelpPage() {
+      const user = Session.get();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      const avatar = document.getElementById('navbar-avatar');
+      const name = document.getElementById('navbar-name');
+      if (avatar) {
+        avatar.style.background = user.avatarColor || 'var(--primary)';
+        avatar.textContent = (user.name || user.email || '?')[0].toUpperCase();
+      }
+      if (name) {
+        name.textContent = user.name || user.email || '用户';
+      }
+    }
+
+    function toggleFAQ(qEl) {
+      const item = qEl.parentElement;
+      item.classList.toggle('open');
+    }
+
+    function scrollToFAQ(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('open');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initHelpPage);
+  </script>
+</body>
+</html>

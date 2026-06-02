@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>思路白板 · AI智能整理 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/idea-board.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user" onclick="window.location.href='settings.html'">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="Session.clear();window.location.href='index.html'">退出</button>
+    </div>
+  </nav>
+
+  <div class="page-container" id="idea-board-app">
+    <div id="alert-container"></div>
+
+    <!-- 顶部：带描述的头 -->
+    <div class="idea-hero">
+      <div class="idea-hero-left">
+        <a href="group.html?id=" id="back-to-group" class="back-link">← 返回小组</a>
+        <h1 class="page-title" id="ib-group-name">💡 思路白板</h1>
+        <div class="page-subtitle" id="ib-group-meta"></div>
+      </div>
+      <div class="idea-hero-right">
+        <div class="hero-stat">
+          <span class="hero-stat-num" id="hero-idea-count">0</span>
+          <span class="hero-stat-label">条思路</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能介绍卡片组（始终可见，帮助新用户理解） -->
+    <div class="feature-cards-row">
+      <div class="feature-card">
+        <div class="feature-card-icon-wrap blue">
+          <span>✏️</span>
+        </div>
+        <div class="feature-card-text">
+          <div class="feature-card-title">随手记录灵感</div>
+          <div class="feature-card-desc">在下方便签墙写下任何想法，全组可见，一块便签一个点子</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon-wrap purple">
+          <span>🤖</span>
+        </div>
+        <div class="feature-card-text">
+          <div class="feature-card-title">AI 自动整理</div>
+          <div class="feature-card-desc">右侧 DeepSeek 工具一键生成大纲、思维导图，告别混乱的聊天记录</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-icon-wrap green">
+          <span>👥</span>
+        </div>
+        <div class="feature-card-text">
+          <div class="feature-card-title">智能任务分工</div>
+          <div class="feature-card-desc">AI 分析成员擅长领域，自动匹配任务模块，每个人做最擅长的事</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 两栏布局 -->
+    <div class="idea-layout" id="idea-layout">
+      <!-- 左栏：思路便签墙 -->
+      <div class="idea-main">
+        <!-- 便签输入区 -->
+        <div class="idea-input-card">
+          <div class="idea-input-header">
+            <div class="idea-input-avatar" id="input-avatar"></div>
+            <div class="idea-input-header-text">
+              <span class="idea-input-label">✏️ 写下你的想法</span>
+              <span class="idea-input-hint">一行一个灵感，Ctrl+Enter 快速提交</span>
+            </div>
+          </div>
+          <textarea class="idea-input-textarea" id="idea-input" rows="2"
+            placeholder="比如：我觉得开场可以放一个竞品对比表格，更直观...&#10;比如：数据分析这块可以用问卷星收集，样本量 200+&#10;比如：PPT 主色调建议用深蓝配金色，更专业..."></textarea>
+          <div class="idea-input-footer">
+            <span class="idea-input-shortcut">Ctrl + Enter 快速提交</span>
+            <button type="button" class="btn btn-primary btn-sm" id="submit-idea" onclick="submitIdea()">
+              ✏️ 贴上去
+            </button>
+          </div>
+        </div>
+
+        <!-- 便签列表头 -->
+        <div class="idea-list-toolbar">
+          <span class="idea-list-title">📌 讨论便签墙</span>
+          <span class="idea-sort-hint">最新在前</span>
+        </div>
+
+        <!-- 便签列表 -->
+        <div class="idea-list" id="idea-list">
+          <div class="empty-state-illustrated" id="ideas-empty">
+            <div class="empty-illustration">
+              <svg width="140" height="100" viewBox="0 0 140 100" fill="none">
+                <rect x="8" y="10" width="124" height="80" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 4"/>
+                <rect x="24" y="28" width="60" height="7" rx="2" fill="#d97706"/>
+                <rect x="24" y="42" width="88" height="7" rx="2" fill="#fbbf24"/>
+                <rect x="24" y="56" width="72" height="7" rx="2" fill="#fcd34d"/>
+                <circle cx="112" cy="32" r="12" fill="#f59e0b" opacity="0.2"/>
+                <text x="112" y="37" text-anchor="middle" font-size="14" fill="#d97706">?</text>
+              </svg>
+            </div>
+            <div class="empty-state-title">白板上还没有内容</div>
+            <div class="empty-state-desc">
+              在上面的输入框写下第一个灵感<br>所有小组成员的想法都会汇集在这里
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右栏：AI 面板 -->
+      <div class="idea-sidebar" id="idea-sidebar">
+
+        <!-- 代理服务状态 -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">🔌 AI 服务状态</div>
+          <div class="proxy-status-card" id="proxy-status-card">
+            <div class="proxy-status-row" id="proxy-status-row">
+              <span class="proxy-status-dot" id="proxy-dot"></span>
+              <span class="proxy-status-text" id="proxy-status-text">检测中...</span>
+              <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="refreshProxyStatus()" title="刷新" style="margin-left:auto">🔄</button>
+            </div>
+            <div class="proxy-tip-text" id="proxy-tip">请确保已编辑 .env 文件并启动代理服务</div>
+          </div>
+        </div>
+
+        <!-- DeepSeek AI 工具 -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-label">🤖 DeepSeek AI 工具</div>
+          <div class="ai-tools-list">
+            <button type="button" class="ai-tool-card" id="btn-outline" onclick="runGenerateOutline()">
+              <div class="ai-tool-card-left">
+                <span class="ai-tool-card-icon" style="background:#ede9fe;color:#7c3aed">📋</span>
+                <div>
+                  <span class="ai-tool-card-title">生成结构化大纲</span>
+                  <span class="ai-tool-card-desc">把零散思路整理成层级清晰的大纲文档</span>
+                </div>
+              </div>
+              <span class="ai-tool-card-arrow">→</span>
+            </button>
+            <button type="button" class="ai-tool-card disabled" id="btn-mindmap" onclick="runGenerateMindMap()" disabled>
+              <div class="ai-tool-card-left">
+                <span class="ai-tool-card-icon" style="background:#dbeafe;color:#2563eb">🧠</span>
+                <div>
+                  <span class="ai-tool-card-title">生成思维导图</span>
+                  <span class="ai-tool-card-desc">大纲一键转可视化导图，可缩放折叠</span>
+                </div>
+              </div>
+              <span class="ai-tool-card-arrow">→</span>
+            </button>
+            <button type="button" class="ai-tool-card" id="btn-assign" onclick="runGenerateAssignment()">
+              <div class="ai-tool-card-left">
+                <span class="ai-tool-card-icon" style="background:#d1fae5;color:#059669">👥</span>
+                <div>
+                  <span class="ai-tool-card-title">智能分工建议</span>
+                  <span class="ai-tool-card-desc">按成员擅长领域自动匹配任务模块</span>
+                </div>
+              </div>
+              <span class="ai-tool-card-arrow">→</span>
+            </button>
+            <button type="button" class="ai-tool-card" id="btn-ask" onclick="toggleAskPanel()">
+              <div class="ai-tool-card-left">
+                <span class="ai-tool-card-icon" style="background:#fce7f3;color:#db2777">💬</span>
+                <div>
+                  <span class="ai-tool-card-title">AI 思路问答</span>
+                  <span class="ai-tool-card-desc">基于讨论内容自由提问，查漏补缺</span>
+                </div>
+              </div>
+              <span class="ai-tool-card-arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- AI 结果展示区 -->
+        <div class="sidebar-section hidden" id="ai-result-section">
+          <div class="sidebar-section-label" id="result-label">📄 AI 处理结果</div>
+          <div class="ai-result-card" id="ai-result-card">
+            <div class="ai-loading hidden" id="ai-loading">
+              <div class="ai-loading-spinner"></div>
+              <div class="ai-loading-text" id="ai-loading-text">AI 正在分析所有思路...</div>
+            </div>
+            <div class="ai-result-content markdown-body" id="ai-result-content"></div>
+            <div class="ai-result-footer hidden" id="result-footer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 思维导图弹窗 -->
+    <div class="modal-overlay" id="mindmap-modal">
+      <div class="modal modal-mindmap">
+        <div class="modal-header">
+          <div class="modal-title" id="mindmap-title">思维导图</div>
+          <div class="mm-toolbar">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="mindmapZoomIn()">🔍+</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="mindmapZoomOut()">🔍-</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="mindmapReset()">↺ 重置</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="mindmapExpandAll()">📖 展开</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="mindmapCollapseAll()">📕 收起</button>
+          </div>
+          <button type="button" class="modal-close" onclick="closeModal('mindmap-modal')">×</button>
+        </div>
+        <div class="modal-body mindmap-body">
+          <div class="mindmap-container" id="mindmap-container">
+            <svg id="mindmap-svg"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 问答弹窗 -->
+    <div class="modal-overlay" id="ask-modal">
+      <div class="modal modal-ask">
+        <div class="modal-header">
+          <div class="modal-title">💬 AI 思路问答</div>
+          <button type="button" class="modal-close" onclick="closeModal('ask-modal')">×</button>
+        </div>
+        <div class="modal-body ask-body">
+          <div class="ask-chat-area" id="ask-chat">
+            <div class="ask-welcome">
+              <div class="ask-welcome-icon">🤖</div>
+              <div class="ask-welcome-title">基于白板讨论，向我提问</div>
+              <div class="ask-examples">
+                <button type="button" class="ask-chip" onclick="quickAsk('这些思路有什么遗漏？')">💡 有什么遗漏？</button>
+                <button type="button" class="ask-chip" onclick="quickAsk('有哪些可优化的点？')">🔧 如何优化？</button>
+                <button type="button" class="ask-chip" onclick="quickAsk('给方案打个分并说明理由')">⭐ 打个分</button>
+                <button type="button" class="ask-chip" onclick="quickAsk('帮我们把思路概括成三句话')">📝 三句话概括</button>
+              </div>
+            </div>
+          </div>
+          <div class="ask-input-row">
+            <input class="form-input ask-input" type="text" id="ask-input"
+              placeholder="输入你的问题..." autocomplete="off">
+            <button type="button" class="btn btn-primary btn-sm" onclick="sendAskQuestion()">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/deepseek.js"></script>
+  <script src="js/idea-board.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initIdeaBoard);
+  </script>
+</body>
+</html>

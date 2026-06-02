@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小组详情 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user" onclick="window.location.href='settings.html'">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="Session.clear();window.location.href='index.html'">退出</button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div id="alert-container"></div>
+
+    <div class="group-header">
+      <div class="group-back-row">
+        <a href="dashboard.html" class="back-link">← 返回面板</a>
+      </div>
+      <div class="group-top-row">
+        <div>
+          <h1 class="page-title" id="group-name">加载中...</h1>
+          <div class="group-meta-row">
+            <span class="badge badge-blue" id="group-course"></span>
+            <span class="group-member-count" id="group-member-count"></span>
+          </div>
+        </div>
+        <div class="group-actions-row">
+          <div class="invite-code-box hidden" id="invite-box">
+            <span class="invite-label">邀请码</span>
+            <span class="invite-code" id="invite-code"></span>
+            <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="copyInviteCode()" title="复制邀请码">📋</button>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openMembersModal()">👥 成员</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.href='bills.html?groupId='+_groupId">💰 账单</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.href='idea-board.html?groupId='+_groupId">💡 思路白板</button>
+          <button type="button" class="btn btn-lottery btn-sm" onclick="openLotteryMenu()">🎲 抽签</button>
+          <button type="button" class="btn btn-primary btn-sm hidden" id="add-task-btn" onclick="openTaskModal()">＋ 发布任务</button>
+        </div>
+      </div>
+      <div class="group-progress-row">
+        <div class="group-progress-label">
+          <span>整体进度</span>
+          <span id="progress-text">0 / 0 任务完成</span>
+        </div>
+        <div class="progress progress-lg"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+    </div>
+
+    <div class="kanban" id="kanban">
+      <div class="kanban-col">
+        <div class="kanban-col-header todo">
+          <span class="kanban-col-title">待开始</span>
+          <span class="kanban-count" id="count-todo">0</span>
+        </div>
+        <div id="col-todo"></div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header doing">
+          <span class="kanban-col-title kanban-col-title-doing">进行中</span>
+          <span class="kanban-count" id="count-doing">0</span>
+        </div>
+        <div id="col-doing"></div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header done">
+          <span class="kanban-col-title kanban-col-title-done">已完成</span>
+          <span class="kanban-count" id="count-done">0</span>
+        </div>
+        <div id="col-done"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="task-drawer">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title" id="drawer-title"></div>
+        <div class="drawer-meta" id="drawer-meta"></div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-status-bar" id="drawer-status-bar"></div>
+      <div class="drawer-desc" id="drawer-desc"></div>
+      <div class="divider"></div>
+      <div class="drawer-files-section">
+        <div class="drawer-files-heading">📎 任务文件</div>
+        <div id="drawer-files"></div>
+        <div class="upload-zone-wrapper" id="upload-zone-container"></div>
+      </div>
+    </div>
+    <div class="drawer-footer" id="drawer-footer"></div>
+  </div>
+
+  <div class="modal-overlay" id="task-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">发布新任务</div>
+        <button type="button" class="modal-close" onclick="closeModal('task-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">任务标题 <span class="label-required">*</span></label>
+          <input class="form-input" type="text" id="task-title" placeholder="例如：PPT制作">
+          <div class="form-error hidden" id="task-title-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">任务描述</label>
+          <textarea class="form-input textarea-resize" id="task-desc" rows="3" placeholder="详细说明任务要求..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="task-assignee">负责人 <span class="label-required">*</span></label>
+          <select class="form-input" id="task-assignee" title="选择负责人">
+            <option value="">请选择负责人</option>
+          </select>
+          <div class="form-error hidden" id="task-assignee-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="task-deadline">截止日期</label>
+          <input class="form-input" type="datetime-local" id="task-deadline" title="选择截止日期">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('task-modal')">取消</button>
+        <button type="button" class="btn btn-primary" onclick="handleCreateTask()">发布任务</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="members-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">小组成员</div>
+        <button type="button" class="modal-close" onclick="closeModal('members-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="members-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('members-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="rating-modal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div class="modal-title">⭐ 任务评分</div>
+        <button type="button" class="modal-close" onclick="closeModal('rating-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="notify-banner" id="rating-banner" style="margin-bottom:16px"></div>
+        <div class="form-group">
+          <label class="form-label">任务负责人：<strong id="rating-assignee-name"></strong></label>
+        </div>
+        <div class="card" style="margin-bottom:16px;padding:16px;background:var(--primary-light);border-color:var(--primary)">
+          <div style="font-weight:600;margin-bottom:12px;color:var(--primary-dark)">👑 组长评分（权重 35%）</div>
+          <div class="form-group">
+            <label class="form-label">评分（0-100）</label>
+            <div style="display:flex;align-items:center;gap:12px">
+              <input type="range" style="flex:1" class="form-input" id="rating-leader" min="0" max="100" value="75" oninput="document.getElementById('rating-leader-value').textContent=this.value">
+              <span style="font-size:18px;font-weight:700;min-width:36px;text-align:right" id="rating-leader-value">75</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px;padding:16px;background:#F0FDF4;border-color:var(--success)">
+          <div style="font-weight:600;margin-bottom:12px;color:var(--success)">👥 组员互评（权重 30%）</div>
+          <div id="rating-member-list"></div>
+        </div>
+        <div class="card" style="margin-bottom:16px;padding:16px;background:#FFFBEB;border-color:var(--warning)">
+          <div style="font-weight:600;margin-bottom:8px;color:#92400E">🤖 AI 评分（权重 20%）：<span id="rating-ai-display">等待计算</span></div>
+          <div style="font-weight:600;color:#92400E">📊 任务完成度（权重 15%）：<span id="rating-completion-display">等待计算</span></div>
+        </div>
+        <div class="form-error hidden" id="rating-error"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('rating-modal')">取消</button>
+        <button type="button" class="btn btn-primary" id="rating-confirm-btn" onclick="submitRating()">提交评分</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="lottery-menu-modal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title">🎲 抽签功能</div>
+        <button type="button" class="modal-close" onclick="closeModal('lottery-menu-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">选择抽签类型</p>
+        <div class="lottery-menu-list">
+          <button type="button" class="btn btn-secondary lottery-menu-btn" onclick="openLeaderLottery()">
+            <span class="lottery-menu-icon">👑</span>
+            <div class="lottery-menu-text">
+              <div class="lottery-menu-title">随机选组长</div>
+              <div class="lottery-menu-desc">从全员或指定成员中随机抽取一位担任组长</div>
+            </div>
+          </button>
+          <button type="button" class="btn btn-secondary lottery-menu-btn" onclick="openTaskLottery()">
+            <span class="lottery-menu-icon">📋</span>
+            <div class="lottery-menu-text">
+              <div class="lottery-menu-title">任务抽签分工</div>
+              <div class="lottery-menu-desc">将待分配任务随机分配给组员，公平公正</div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('lottery-menu-modal')">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="leader-lottery-modal">
+    <div class="modal lottery-modal">
+      <div class="modal-header">
+        <div class="modal-title">👑 随机选组长</div>
+        <button type="button" class="modal-close" onclick="closeModal('leader-lottery-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="leader-step-1">
+          <div class="form-group">
+            <label class="form-label">参与抽签的成员 <span class="label-hint">（点击切换是否参与）</span></label>
+            <div class="lottery-participants" id="leader-participants"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">排除当前组长</label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="leader-exclude-current" checked>
+              <span>若已有组长，将其排除在外</span>
+            </label>
+          </div>
+        </div>
+        <div id="leader-step-2" class="hidden">
+          <div class="lottery-drum">
+            <div class="lottery-drum-label">正在抽取组长</div>
+            <div class="lottery-drum-name" id="leader-drum-name">—</div>
+            <div class="lottery-drum-result" id="leader-drum-result"></div>
+            <div class="lottery-drum-confetti" id="leader-confetti">🎉</div>
+          </div>
+        </div>
+        <div id="leader-step-3" class="hidden">
+          <div class="lottery-result-card" id="leader-result-card"></div>
+          <div class="form-group form-group-mt">
+            <label class="form-label">导出结果</label>
+            <div class="lottery-export-area" id="leader-export"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" id="leader-lottery-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('leader-lottery-modal')">取消</button>
+        <button type="button" class="btn btn-lottery" id="leader-start-btn" onclick="startLeaderLottery()">开始抽签</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="task-lottery-modal">
+    <div class="modal lottery-modal">
+      <div class="modal-header">
+        <div class="modal-title">📋 任务抽签分工</div>
+        <button type="button" class="modal-close" onclick="closeModal('task-lottery-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="task-step-1">
+          <div class="form-group">
+            <label class="form-label">参与抽签的成员</label>
+            <div class="lottery-participants" id="task-participants"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">参与抽签的任务 <span class="label-hint">（仅显示未分配/待开始任务）</span></label>
+            <div class="lottery-task-list" id="task-lottery-list"></div>
+            <div class="form-error hidden" id="task-lottery-error"></div>
+          </div>
+        </div>
+        <div id="task-step-2" class="hidden">
+          <div class="lottery-step-indicator" id="task-step-dots"></div>
+          <div class="lottery-drum">
+            <div class="lottery-drum-label" id="task-drum-label">正在为任务抽取负责人</div>
+            <div class="lottery-drum-name" id="task-drum-name">—</div>
+            <div class="lottery-drum-result" id="task-drum-result"></div>
+            <div class="lottery-drum-confetti" id="task-confetti">🎉</div>
+          </div>
+          <div class="lottery-task-list" id="task-progress-list"></div>
+        </div>
+        <div id="task-step-3" class="hidden">
+          <div class="lottery-result-card" id="task-result-card"></div>
+          <div class="form-group form-group-mt">
+            <label class="form-label">导出结果</label>
+            <div class="lottery-export-area" id="task-export"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" id="task-lottery-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('task-lottery-modal')">取消</button>
+        <button type="button" class="btn btn-lottery" id="task-start-btn" onclick="startTaskLottery()">开始抽签</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/deepseek.js"></script>
+  <script src="js/lottery.js"></script>
+  <script src="js/group.js"></script>
+  <script src="js/ai-chatbot.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initGroupPage);
+  </script>
+</body>
+</html>

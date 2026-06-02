@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人设置 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="Session.clear();window.location.href='index.html'">退出</button>
+    </div>
+  </nav>
+
+  <div class="page-container settings-container">
+    <div class="page-header">
+      <div class="back-row">
+        <a href="dashboard.html" class="back-link">← 返回面板</a>
+      </div>
+      <div class="page-title">个人设置</div>
+    </div>
+
+    <!-- 基本信息 -->
+    <div class="card settings-card">
+      <div class="card-header">
+        <div class="card-heading">基本信息</div>
+      </div>
+      <div class="card-body">
+        <div class="profile-row">
+          <div id="profile-avatar"></div>
+          <div>
+            <div class="profile-name" id="profile-name-display"></div>
+            <div class="profile-email" id="profile-email-display"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="settings-name">姓名 / 昵称</label>
+          <input class="form-input" type="text" id="settings-name" placeholder="你的名字">
+          <div class="form-error hidden" id="settings-name-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">擅长领域</label>
+          <div class="skill-tags" id="settings-skill-tags"></div>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="saveProfile()">保存修改</button>
+      </div>
+    </div>
+
+    <!-- 所属班级与小组 -->
+    <div class="card settings-card">
+      <div class="card-header">
+        <div class="card-heading">我的班级与小组</div>
+      </div>
+      <div class="card-body" id="membership-info">
+        <div class="loading-hint">加载中...</div>
+      </div>
+    </div>
+
+    <!-- 修改密码 -->
+    <div class="card settings-card">
+      <div class="card-header">
+        <div class="card-heading">修改密码</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label" for="old-password">当前密码</label>
+          <input class="form-input" type="password" id="old-password" placeholder="输入当前密码">
+          <div class="form-error hidden" id="old-password-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="new-password">新密码</label>
+          <input class="form-input" type="password" id="new-password" placeholder="至少6位">
+          <div class="form-error hidden" id="new-password-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="confirm-password">确认新密码</label>
+          <input class="form-input" type="password" id="confirm-password" placeholder="再次输入新密码">
+          <div class="form-error hidden" id="confirm-password-error"></div>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="changePassword()">修改密码</button>
+      </div>
+    </div>
+
+    <!-- 数据统计 -->
+    <div class="card settings-card">
+      <div class="card-header">
+        <div class="card-heading">我的数据</div>
+      </div>
+      <div class="card-body">
+        <div class="stats-grid">
+          <div>
+            <div class="stat-number-primary" id="stat-groups">0</div>
+            <div class="stat-label">加入小组</div>
+          </div>
+          <div>
+            <div class="stat-number-success" id="stat-completed">0</div>
+            <div class="stat-label">完成任务</div>
+          </div>
+          <div>
+            <div class="stat-number-warning" id="stat-pending">0</div>
+            <div class="stat-label">待完成</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 危险操作 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-heading-danger">危险操作</div>
+      </div>
+      <div class="card-body">
+        <p class="danger-hint">清除所有本地数据（包括所有小组、任务、文件），此操作不可撤销。</p>
+        <button type="button" class="btn btn-danger btn-sm" onclick="clearAllData()">清除所有数据</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/settings.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initSettings);
+  </script>
+</body>
+</html>

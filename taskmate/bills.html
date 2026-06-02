@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小组账单 — TaskMate</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="navbar-brand" href="dashboard.html">
+      <div class="logo-icon">✓</div>
+      TaskMate
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-user" id="navbar-user" onclick="window.location.href='settings.html'">
+        <div id="navbar-avatar"></div>
+        <span class="navbar-user-name" id="navbar-name"></span>
+      </div>
+      <a href="messages.html" class="btn btn-ghost btn-sm">💬 消息中心</a>
+      <a href="help.html" class="btn btn-ghost btn-sm">❓ 帮助中心</a>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="Session.clear();window.location.href='index.html'">退出</button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div id="alert-container"></div>
+
+    <div class="page-header">
+      <div class="back-row">
+        <a class="back-link" id="back-to-group" href="dashboard.html">← 返回小组</a>
+      </div>
+      <div class="page-header-row">
+        <div>
+          <div class="page-title" id="bills-group-name">小组账单</div>
+          <div class="page-subtitle" id="bills-group-meta"></div>
+        </div>
+        <div class="page-header-actions">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openSettleModal()">✅ 一键结算</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="openAddBillModal()">＋ 记一笔</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bills-layout">
+      <div class="bills-main">
+
+        <!-- 汇总卡 -->
+        <div class="card settings-card">
+          <div class="card-body">
+            <div class="bill-summary-grid">
+              <div class="bill-summary-item">
+                <div class="bill-summary-num bill-summary-num-default" id="summary-total">¥0</div>
+                <div class="bill-summary-label">总支出</div>
+              </div>
+              <div class="bill-summary-item">
+                <div class="bill-summary-num bill-summary-num-primary" id="summary-count">0</div>
+                <div class="bill-summary-label">笔账单</div>
+              </div>
+              <div class="bill-summary-item">
+                <div class="bill-summary-num bill-summary-num-danger" id="summary-unsettled">¥0</div>
+                <div class="bill-summary-label">待结算</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="bills-filter-bar">
+          <select class="form-input bills-filter-select" id="filter-category" aria-label="按分类筛选" onchange="renderBillList()">
+            <option value="">全部分类</option>
+            <option value="餐饮">🍜 餐饮</option>
+            <option value="交通">🚌 交通</option>
+            <option value="材料">📦 材料</option>
+            <option value="活动">🎉 活动</option>
+            <option value="其他">📌 其他</option>
+          </select>
+          <select class="form-input bills-filter-select" id="filter-status" aria-label="按状态筛选" onchange="renderBillList()">
+            <option value="">全部状态</option>
+            <option value="unsettled">未结算</option>
+            <option value="settled">已结算</option>
+          </select>
+          <span class="bills-filter-count" id="filter-result-count"></span>
+        </div>
+
+        <!-- 账单列表 -->
+        <div id="bill-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">💰</div>
+            <div class="empty-state-text">还没有账单记录</div>
+            <div class="empty-state-hint">点击右上角"记一笔"添加第一条账单</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 侧边栏 -->
+      <div class="bills-sidebar">
+        <div class="card bills-sidebar-top">
+          <div class="card-header">
+            <div class="card-heading">我的余额</div>
+          </div>
+          <div class="card-body bills-sidebar-body">
+            <div id="my-balance-card" class="loading-hint">计算中...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-heading">成员欠款明细</div>
+          </div>
+          <div class="card-body bills-sidebar-body">
+            <div class="balance-list" id="balance-list">
+              <div class="loading-hint">暂无数据</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加账单弹窗 -->
+  <div class="modal-overlay" id="add-bill-modal">
+    <div class="modal modal-500">
+      <div class="modal-header">
+        <div class="modal-title">💰 记一笔账单</div>
+        <button type="button" class="modal-close" onclick="closeModal('add-bill-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="bill-title">账单名称 <span class="label-required">*</span></label>
+          <input class="form-input" type="text" id="bill-title" placeholder="例如：打印材料费、聚餐费">
+          <div class="form-error hidden" id="bill-title-error"></div>
+        </div>
+        <div class="bill-split-form-row">
+          <div class="form-group">
+            <label class="form-label" for="bill-amount">金额（元）<span class="label-required">*</span></label>
+            <input class="form-input" type="number" id="bill-amount" placeholder="0.00" min="0" step="0.01">
+            <div class="form-error hidden" id="bill-amount-error"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="bill-category">分类</label>
+            <select class="form-input" id="bill-category">
+              <option value="餐饮">🍜 餐饮</option>
+              <option value="交通">🚌 交通</option>
+              <option value="材料" selected>📦 材料</option>
+              <option value="活动">🎉 活动</option>
+              <option value="其他">📌 其他</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="bill-paidby">付款人 <span class="label-required">*</span></label>
+          <select class="form-input" id="bill-paidby">
+            <option value="">请选择付款人</option>
+          </select>
+          <div class="form-error hidden" id="bill-paidby-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">分摊方式</label>
+          <div class="split-type-row">
+            <label class="checkbox-label">
+              <input type="radio" name="split-type" value="equal" checked onchange="onSplitTypeChange()">
+              <span>均摊</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="radio" name="split-type" value="custom" onchange="onSplitTypeChange()">
+              <span>自定义</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="radio" name="split-type" value="payer" onchange="onSplitTypeChange()">
+              <span>付款人全出</span>
+            </label>
+          </div>
+          <div id="split-equal-section">
+            <div class="split-hint">参与均摊的成员（点击切换）</div>
+            <div class="lottery-participants" id="split-members"></div>
+          </div>
+          <div id="split-custom-section" class="hidden">
+            <div class="split-hint">填写每人分摊金额</div>
+            <div id="split-custom-inputs"></div>
+            <div class="split-custom-hint">已分配：<span id="split-custom-total">¥0</span> / 总额：<span id="split-custom-max">¥0</span></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="bill-desc">备注</label>
+          <input class="form-input" type="text" id="bill-desc" placeholder="可选，补充说明">
+        </div>
+        <div class="form-group">
+          <label class="form-label">上传凭单</label>
+          <div class="upload-version-zone" id="receipt-zone" onclick="document.getElementById('receipt-input').click()">
+            <div class="upload-zone-icon">🧾</div>
+            <div class="upload-zone-text" id="receipt-file-name">点击上传收据/截图</div>
+            <div class="upload-zone-hint">支持图片、PDF，最大 20MB</div>
+          </div>
+          <input type="file" id="receipt-input" class="hidden" accept=".jpg,.jpeg,.png,.gif,.pdf,.webp" title="上传收据/截图">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-bill-modal')">取消</button>
+        <button type="button" class="btn btn-primary" id="add-bill-confirm-btn" onclick="handleAddBill()">记账</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 账单详情弹窗 -->
+  <div class="modal-overlay" id="bill-detail-modal">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div class="modal-title" id="detail-modal-title">账单详情</div>
+        <button type="button" class="modal-close" onclick="closeModal('bill-detail-modal')">×</button>
+      </div>
+      <div class="modal-body" id="bill-detail-body"></div>
+      <div class="modal-footer" id="bill-detail-footer"></div>
+    </div>
+  </div>
+
+  <!-- 凭单预览弹窗 -->
+  <div class="modal-overlay" id="receipt-preview-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">🧾 凭单预览</div>
+        <button type="button" class="modal-close" onclick="closeModal('receipt-preview-modal')">×</button>
+      </div>
+      <div class="modal-body receipt-preview-body" id="receipt-preview-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('receipt-preview-modal')">关闭</button>
+        <button type="button" class="btn btn-primary" id="receipt-download-btn">⬇️ 下载凭单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 一键结算弹窗 -->
+  <div class="modal-overlay" id="settle-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">✅ 一键结算</div>
+        <button type="button" class="modal-close" onclick="closeModal('settle-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">将所有未结算账单标记为已结算，此操作不可撤销。</p>
+        <div id="settle-preview"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('settle-modal')">取消</button>
+        <button type="button" class="btn btn-primary" onclick="handleSettle()">确认结算</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/bills.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', initBillsPage);
+  </script>
+</body>
+</html>
