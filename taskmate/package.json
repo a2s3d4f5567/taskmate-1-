@@ -1,15 +1,9 @@
 {
-  "name": "taskmate-proxy",
+  "name": "taskmate",
   "version": "1.0.0",
-  "description": "TaskMate 本地 DeepSeek API 代理服务",
-  "main": "server.js",
+  "description": "TaskMate 团队任务管理工具",
   "scripts": {
-    "start": "node server.js",
     "dev": "node server.js"
   },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.0"
-  }
+  "dependencies": {}
 }
